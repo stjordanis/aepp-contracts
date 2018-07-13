@@ -189,7 +189,7 @@ export default {
       account: account,
       byteCode: '',
       client: false,
-      host: 'https://sdk-testnet.aepps.com',
+      host: 'http://localhost:3001',
       deployedDataObj: false,
       deployInfo: '',
       minedData: false,
@@ -279,6 +279,18 @@ export default {
         console.log(err)
       }
     },
+    async decodeContractResult (data, type = 'int') {
+      try {
+        return this.client.api.decodeData(
+          {
+            'data': data,
+            'sophia-type': type
+          }
+        )
+      } catch (err) {
+        console.log(err)
+      }
+    },
     onCompile () {
       this.compileError = ''
       this.callError = ''
@@ -322,8 +334,17 @@ export default {
       if (this.staticFunc && this.staticArgs) {
         this.callStatic(this.staticFunc, this.staticArgs)
           .then(data => {
-            this.callStaticRes = data
-            this.callStaticError = ''
+            // console.log(data)
+            this.decodeContractResult(data, 'string').then(res => {
+              // console.log('args:', this.staticArgs)
+              // console.log('result:', res.data)
+              // console.log('result decoded:', decodeURIComponent(escape(res.data.value)))
+              this.callStaticRes = decodeURIComponent(escape(res.data.value))
+              this.callStaticError = ''
+            })
+              .catch(err => {
+                this.callStaticError = `${err}`
+              })
           })
           .catch(err => {
             this.callStaticError = `${err}`
